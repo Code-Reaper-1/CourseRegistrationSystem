@@ -1,0 +1,202 @@
+import random
+
+"""
+Course Registration and Payment System
+
+This program allows administrators to:
+1. Add courses.
+2. Register students with a unique ID and email.
+3. Enroll students in multiple courses.
+4. Calculate total fees and 40% of the total for selected courses.
+5. Process payments for enrolled courses.
+6. Check student balances.
+7. Display available courses, registered students, and students in a specific course.
+
+To run the program, simply execute the script and follow the on-screen prompts.
+"""
+
+
+# Class to represent a course
+class Course:
+    def __init__(self, course_id, name, fee):
+        self.course_id = course_id
+        self.name = name
+        self.fee = fee
+
+
+# Class to represent a student
+class Student:
+    def __init__(self, student_id, name, email):
+        self.student_id = student_id
+        self.name = name
+        self.email = email
+        self.courses = []
+        self.balance = 0
+
+    # Method to enroll a student in a course
+    def enroll(self, course):
+        if course not in self.courses:
+            self.courses.append(course)
+            self.balance += course.fee
+        else:
+            print(f"Student already enrolled in {course.name}.")
+
+    # Method to calculate the total fee for all enrolled courses
+    def get_total_fee(self):
+        return sum(course.fee for course in self.courses)
+
+
+# Class to manage the registration system
+class RegistrationSystem:
+    def __init__(self):
+        self.courses = []
+        self.students = {}
+
+    # Method to add a course
+    def add_course(self, course_id, name, fee):
+        course = Course(course_id, name, fee)
+        self.courses.append(course)
+        print(f"Course {name} added.")
+
+    # Method to register a student
+    def register_student(self, name):
+        student_id = self.generate_student_id()
+        email = self.generate_student_email(name)
+        if student_id not in self.students:
+            student = Student(student_id, name, email)
+            self.students[student_id] = student
+            print(f"Student {name} registered with ID {student_id} and email {email}.")
+        else:
+            print("Student ID already exists.")
+
+    # Method to generate a unique student ID
+    def generate_student_id(self):
+        year = random.choice([2020, 2021, 2022, 2023, 2024, 2025])
+        random_digits = random.randint(1000, 9999)
+        return f"{year}{random_digits}"
+
+    # Method to generate a student email
+    def generate_student_email(self, name):
+        first_initial = name[0].lower()
+        last_name = name.split()[-1].lower()
+        return f"{first_initial}{last_name}@stu.ucc.edu.jm"
+
+    # Method to enroll a student in multiple courses
+    def enroll_in_courses(self, student_id, course_ids):
+        if student_id in self.students:
+            student = self.students[student_id]
+            total_fee = 0
+            for course_id in course_ids:
+                course = next((c for c in self.courses if c.course_id == course_id), None)
+                if course:
+                    student.enroll(course)
+                    total_fee += course.fee
+                else:
+                    print(f"Course ID {course_id} not found.")
+            print(f"Student {student.name} enrolled in courses: {', '.join(course_ids)}")
+            print(f"Total fee for selected courses: {total_fee}")
+            print(f"40% of total fee: {0.4 * total_fee}")
+        else:
+            print("Student not found.")
+
+    # Method to process a payment for a student
+    def calculate_payment(self, student_id, amount):
+        if student_id in self.students:
+            student = self.students[student_id]
+            if amount >= 0.4 * student.balance:
+                student.balance -= amount
+                print(f"Payment of {amount} accepted. Remaining balance: {student.balance}")
+            else:
+                print("Payment must be at least 40% of the balance.")
+        else:
+            print("Student not found.")
+
+    # Method to check a student's balance
+    def check_student_balance(self, student_id):
+        if student_id in self.students:
+            student = self.students[student_id]
+            return student.balance
+        else:
+            print("Student not found.")
+            return None
+
+    # Method to display all courses
+    def show_courses(self):
+        for course in self.courses:
+            print(f"Course ID: {course.course_id}, Name: {course.name}, Fee: {course.fee}")
+
+    # Method to display all registered students
+    def show_registered_students(self):
+        for student_id, student in self.students.items():
+            print(f"Student ID: {student.student_id}, Name: {student.name}, Email: {student.email}")
+
+    # Method to display students enrolled in a specific course
+    def show_students_in_course(self, course_id):
+        for student in self.students.values():
+            if any(course.course_id == course_id for course in student.courses):
+                print(f"Student ID: {student.student_id}, Name: {student.name}")
+
+
+def main():
+    system = RegistrationSystem()
+    # Add courses
+    courses = [
+        ("AI103", "Artificial Intelligence"),
+        ("MAL111", "Machine Learning"),
+        ("CSC215", "Computer Science"),
+        ("SEN321", "Software Engineering"),
+        ("DSC213", "Data Science"),
+        ("PRT789", "Programming Techniques"),
+        ("CIE090", "Computer Information Essentials"),
+        ("DMS543", "Database Management System"),
+        ("INT456", "Information Technology"),
+        ("CRY100", "Cryptography")
+    ]
+
+    fee = 45045
+    for course_id, name in courses:
+        system.add_course(course_id, name, fee)
+
+    while True:
+        print("\n1. Register Student")
+        print("2. Enroll in Courses")
+        print("3. Make Payment")
+        print("4. Show Courses")
+        print("5. Show Registered Students")
+        print("6. Show Students in Course")
+        print("7. Check Student Balance")
+        print("8. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            name = input("Enter student name: ")
+            system.register_student(name)
+        elif choice == '2':
+            student_id = input("Enter student ID: ")
+            course_ids = input("Enter course IDs (comma-separated): ").split(',')
+            system.enroll_in_courses(student_id, [course_id.strip() for course_id in course_ids])
+        elif choice == '3':
+            student_id = input("Enter student ID: ")
+            amount = float(input("Enter payment amount: "))
+            system.calculate_payment(student_id, amount)
+        elif choice == '4':
+            system.show_courses()
+        elif choice == '5':
+            system.show_registered_students()
+        elif choice == '6':
+            course_id = input("Enter course ID: ")
+            system.show_students_in_course(course_id)
+        elif choice == '7':
+            student_id = input("Enter student ID: ")
+            balance = system.check_student_balance(student_id)
+            if balance is not None:
+                print(f"Student balance: {balance}")
+        elif choice == '8':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    main()
